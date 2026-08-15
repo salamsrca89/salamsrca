@@ -1,14 +1,13 @@
-import { drizzle } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "./schema";
-import { getBindings } from "./runtime-env";
+
+// قراءة رابط الاتصال من متغيرات البيئة في Render
+const connectionString = process.env.DATABASE_URL!;
+
+// إعداد عميل الاتصال بقاعدة بيانات PostgreSQL الخارجية
+const client = postgres(connectionString, { ssl: 'require' });
 
 export function getDb() {
-  const db = getBindings().DB;
-  if (!db) {
-    throw new Error(
-      "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let your control plane inject the real binding values before using the database."
-    );
-  }
-
-  return drizzle(db, { schema });
+  return drizzle(client, { schema });
 }
